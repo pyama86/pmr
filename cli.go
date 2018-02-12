@@ -34,9 +34,10 @@ type CLI struct {
 // Run invokes the CLI with the given arguments.
 func (cli *CLI) Run(args []string) int {
 	var (
-		timeout  int
-		url      string
-		insecure bool
+		timeout     int
+		concurrency int
+		url         string
+		insecure    bool
 
 		version bool
 	)
@@ -45,6 +46,8 @@ func (cli *CLI) Run(args []string) int {
 	flags := flag.NewFlagSet(Name, flag.ContinueOnError)
 	flags.SetOutput(cli.errStream)
 
+	flags.IntVar(&concurrency, "concurrency", 5, "request concurrency")
+	flags.IntVar(&concurrency, "c", 5, "request concurrency(Short)")
 	flags.IntVar(&timeout, "timeout", 3, "request timeout sec")
 	flags.IntVar(&timeout, "t", 3, "request timeout sec(Short)")
 	flags.StringVar(&url, "url", "", "url")
@@ -71,11 +74,15 @@ func (cli *CLI) Run(args []string) int {
 	}
 	lines := strings.Split(string(body), "\n")
 
+	c := make(chan bool, concurrency)
 	eg := errgroup.Group{}
 	for _, l := range lines {
-		// スコープが変わるため代入が必要
 		l := l
+		c := c
+
+		c <- true
 		eg.Go(func() error {
+			defer func() { <-c }()
 			return request(url, timeout, insecure, l)
 		})
 	}
