@@ -4,7 +4,7 @@ php viewing checker
 ## Usage
 
 ```
-$ find ./your_document_root | prm -url https://your_host
+$ find ./your_document_root | pmr -url https://your_host
 ```
 
 ## Install
