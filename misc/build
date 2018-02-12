@@ -1,0 +1,23 @@
+#!/bin/bash
+
+XC_OS='linux darwin'
+XC_ARCH=amd64
+XC_NAME=pmr
+
+VERSION=${1:-$(cat version)}
+REVISION=${2:-$(git describe --always)}
+GOVERSION=$(go version)
+BUILDDATE=$(date '+%Y/%m/%d %H:%M:%S %Z')
+ME=$(whoami)
+
+rm -rf pkg && mkdir pkg
+
+gox -os "$XC_OS" -arch "$XC_ARCH" -osarch "!darwin/arm" -ldflags "-X main.version=$VERSION -X main.revision=$REVISION -X \"main.goversion=$GOVERSION\" -X \"main.builddate=$BUILDDATE\" -X \"main.builduser=$ME\"" \
+    -output "pkg/{{.OS}}_{{.Arch}}/$XC_NAME" -tags="$XC_NAME" .
+
+for PLATFORM in $(find ./pkg -mindepth 1 -maxdepth 1 -type d); do
+  OSARCH=$(basename $PLATFORM)
+  pushd ${PLATFORM} >/dev/null 2>&1
+  zip ../${OSARCH}.zip ./*
+  popd >/dev/null 2>&1
+done
