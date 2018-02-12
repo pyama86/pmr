@@ -115,14 +115,17 @@ func request(url string, timeout int, insecure bool, filePath string) error {
 	}
 
 	logrus.Infof("request: %s %s", u, r.Status)
-	fl, err := getFirstLine(filePath)
+	lines, err := getFileHead(filePath)
 	if err != nil {
 		return err
 	}
 
-	if strings.Index(string(body), fl) > 0 {
-		logrus.Warnf("This file is published %s", filePath)
+	for _, l := range lines {
+		if strings.Index(string(body), l) < 0 {
+			return nil
+		}
 	}
+	logrus.Warnf("This file is published %s", filePath)
 	return nil
 }
 
@@ -138,21 +141,23 @@ func urlJoin(base, path string) (string, error) {
 	return pb.ResolveReference(u).String(), nil
 }
 
-func getFirstLine(path string) (string, error) {
+func getFileHead(path string) ([]string, error) {
 	fp, err := os.Open(path)
 	if err != nil {
-		if err.Error() == "open : no such file or directory" {
-			return "", nil
-		}
-		return "", err
+		return nil, err
 	}
+
+	cnt := 0
+	lines := []string{}
 
 	defer fp.Close()
 	reader := bufio.NewReaderSize(fp, 4096)
 	for line := ""; err == nil; line, err = reader.ReadString('\n') {
-		if len(line) > 5 {
-			return line, err
+		lines = append(lines, line)
+		cnt++
+		if cnt > 10 {
+			break
 		}
 	}
-	return "", nil
+	return lines, nil
 }
