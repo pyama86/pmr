@@ -79,7 +79,9 @@ func (cli *CLI) Run(args []string) int {
 	for _, l := range lines {
 		l := l
 		c := c
-
+		if l == "" || l == "\n" {
+			continue
+		}
 		c <- true
 		eg.Go(func() error {
 			defer func() { <-c }()
