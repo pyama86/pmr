@@ -9,10 +9,8 @@ $ find ./your_document_root | pmr -url https://your_host
 
 ## Install
 
-To install, use `go get`:
-
 ```bash
-$ go get -d github.com/pyama86/pmr
+$ make build
 ```
 
 ## Contribution
