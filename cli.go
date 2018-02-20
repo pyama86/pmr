@@ -116,9 +116,12 @@ func request(url string, timeout int, insecure bool, filePath string) error {
 		return err
 	}
 
-	logrus.Infof("request: %s %s", u, r.Status)
+	st := fmt.Sprintf("request: %s %s", u, r.Status)
 	if r.StatusCode != http.StatusOK {
+		logrus.Warnf(st)
 		return nil
+	} else {
+		logrus.Infof(st)
 	}
 	lines, err := getFileHead(filePath)
 	if err != nil {
