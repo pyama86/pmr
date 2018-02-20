@@ -8,7 +8,7 @@ $ find ./your_document_root | pmr -url https://your_host
 ```
 
 ## Install
-
+It is distributed in the [release page](https://github.com/pyama86/pmr/releases).
 ```bash
 $ make build
 ```
