@@ -109,6 +109,7 @@ func request(url string, timeout int, insecure bool, filePath string) error {
 		return err
 	}
 
+	defer r.Body.Close()
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		return err
