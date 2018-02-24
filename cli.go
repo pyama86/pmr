@@ -38,6 +38,7 @@ func (cli *CLI) Run(args []string) int {
 		concurrency int
 		url         string
 		insecure    bool
+		skipErrors  bool
 
 		version bool
 	)
@@ -54,6 +55,7 @@ func (cli *CLI) Run(args []string) int {
 	flags.StringVar(&url, "u", "", "url(Short)")
 	flags.BoolVar(&insecure, "insecure", false, "Allow connections to SSL sites without certs")
 	flags.BoolVar(&insecure, "k", false, "Allow connections to SSL sites without certs(Short)")
+	flags.BoolVar(&skipErrors, "skip-errors", false, "Skip errors if HTTP GET request fails")
 
 	flags.BoolVar(&version, "version", false, "Print version information and quit.")
 
@@ -85,7 +87,7 @@ func (cli *CLI) Run(args []string) int {
 		c <- true
 		eg.Go(func() error {
 			defer func() { <-c }()
-			return request(url, timeout, insecure, l)
+			return request(url, timeout, insecure, l, skipErrors)
 		})
 	}
 	if err := eg.Wait(); err != nil {
@@ -94,7 +96,7 @@ func (cli *CLI) Run(args []string) int {
 	return ExitCodeOK
 }
 
-func request(url string, timeout int, insecure bool, filePath string) error {
+func request(url string, timeout int, insecure bool, filePath string, skipErrors bool) error {
 	u, err := urlJoin(url, filePath)
 	if err != nil {
 		return err
@@ -108,7 +110,12 @@ func request(url string, timeout int, insecure bool, filePath string) error {
 	}
 	r, err := client.Get(u)
 	if err != nil {
-		return err
+		if skipErrors {
+			logrus.Error(err)
+			return nil
+		} else {
+			return err
+		}
 	}
 
 	defer r.Body.Close()
