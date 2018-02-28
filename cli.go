@@ -108,7 +108,14 @@ func request(url string, timeout int, insecure bool, filePath string, skipErrors
 		Transport: tr,
 		Timeout:   time.Duration(timeout) * time.Second,
 	}
-	r, err := client.Get(u)
+	req, err := http.NewRequest("GET", u, nil)
+	if err != nil {
+		return err
+	}
+	ua := fmt.Sprintf("%s/%s", "PyamaMultiRequest", Version)
+	req.Header.Set("User-Agent", ua)
+
+	r, err := client.Do(req)
 	if err != nil {
 		if skipErrors {
 			logrus.Error(err)
