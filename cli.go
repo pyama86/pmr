@@ -132,7 +132,9 @@ func request(url string, timeout int, insecure bool, filePath string, skipErrors
 	}
 
 	st := fmt.Sprintf("request: %s %s", u, r.Status)
-	if r.StatusCode != http.StatusOK {
+	if r.StatusCode != http.StatusOK &&
+		r.StatusCode != http.StatusNotFound &&
+		r.StatusCode != http.StatusForbidden {
 		logrus.Warnf(st)
 		return nil
 	} else {
