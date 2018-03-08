@@ -176,9 +176,11 @@ func getFileHead(path string) ([]string, error) {
 	lines := []string{}
 
 	defer fp.Close()
-	reader := bufio.NewReaderSize(fp, 4096)
-	for line := ""; err == nil; line, err = reader.ReadString('\n') {
-		lines = append(lines, line)
+	scanner := bufio.NewScanner(fp)
+	buf := make([]byte, 0, 1024*4)
+	scanner.Buffer(buf, 1024*8)
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
 		cnt++
 		if cnt > 10 {
 			break
