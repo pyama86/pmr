@@ -24,6 +24,11 @@ const (
 	ExitCodeError int = 1 + iota
 )
 
+const (
+	initScanTokenSize int = 1024 * 4
+	MaxScanTokenSize  int = 1024 * 64
+)
+
 // CLI is the command line object
 type CLI struct {
 	// outStream and errStream are the stdout and stderr
@@ -176,9 +181,11 @@ func getFileHead(path string) ([]string, error) {
 	lines := []string{}
 
 	defer fp.Close()
-	reader := bufio.NewReaderSize(fp, 4096)
-	for line := ""; err == nil; line, err = reader.ReadString('\n') {
-		lines = append(lines, line)
+	scanner := bufio.NewScanner(fp)
+	buf := make([]byte, 0, initScanTokenSize)
+	scanner.Buffer(buf, MaxScanTokenSize)
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
 		cnt++
 		if cnt > 10 {
 			break
