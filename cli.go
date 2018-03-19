@@ -150,6 +150,10 @@ func request(url string, timeout int, insecure bool, filePath string, skipErrors
 		return err
 	}
 
+	if len(lines) == 0 && r.ContentLength > 0 {
+		return nil
+	}
+
 	for _, l := range lines {
 		if strings.Index(string(body), l) < 0 {
 			return nil
