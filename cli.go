@@ -150,7 +150,7 @@ func request(url string, timeout int, insecure bool, filePath string, skipErrors
 		return err
 	}
 
-	if len(lines) == 0 && r.ContentLength > 0 {
+	if len(lines) == 0 && len(body) > 0 {
 		return nil
 	}
 
